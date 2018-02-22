@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title></title>
+<meta http-equiv="imagetoolbar" content="no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<style type="text/css">
+html, body { margin:0; padding: 0; height: 100%; width: 100%; }
+body { width:100%; height:100%; background: #ffffff; }
+#map { position: absolute; height: 100%; width: 100%;}
+</style>
+<link rel="stylesheet" href="https://storage.googleapis.com/qual-airbus-tiles/ol.css" type="text/css">
+<script src="https://storage.googleapis.com/qual-airbus-tiles/polyfill.js"></script>
+<script src="https://storage.googleapis.com/qual-airbus-tiles/ol.js" type="text/javascript"></script>
+ <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      $( document ).ready(function() {
+        $( "#goTo" ).change(function() {
+          var address = $(this).val();
+          window.location.replace(address);
+		  window.location.reload();
+        });
+      });
+    </script>
+</head>
+<body>
+<form>
+<select id="goTo" name="goTo">
+<option>Please select image</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/02233661acce66a927fa539b65d48e3d5e1735d0/rgb/4326/metadata.json">Image1 quilfoouvrirenpremier</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/245c939cb0a280dc359750a8d47369821cb58f2b/rgb/4326/metadata.json">Image2</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/4ec24ea1c3db6c5bc7462b4efd6b5f106549d94b/rgb/4326/metadata.json">Image3</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/647129b2f4e49388f85fd7d1b0e34d4fa8e1ca0d/rgb/4326/metadata.json">Image4</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/673a6ea97e7532912c386a845c75ecce12ac3e78/rgb/4326/metadata.json">Image5</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/6cc29b704105e79fb009c8558947ed2432e2ba16/rgb/4326/metadata.json">Image6</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/75a91bf008cd8d24af71d81d67925e3b13e64966/rgb/4326/metadata.json">Image7</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/96ffc03db8ee387a9b2931bb000f7eec6970c205/rgb/4326/metadata.json">Image8</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/9a0033ab14070ca461871e539e12f39f814820a8/rgb/4326/metadata.json">Image9</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/a3fce888d1a784d91bea9bd3e60a137e7358baae/rgb/4326/metadata.json">Image10</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/c452bab06c2a4d0597fae240d5126ee7798e47c7/rgb/4326/metadata.json">Image11</option>
+<option value="https://storage.googleapis.com/qual-airbus-tiles/tileviewer.html#https://storage.googleapis.com/qual-airbus-tiles/f59ed29e41095fd16d78b8d50982a25b2ca4e065/rgb/4326/metadata.json">Image12</option>
+</select>​
+</form>
+<div id="map"></div>
+<script type="text/javascript">
+var url = location.hash.substr(1);
+if (!url) {
+  //alert('Specify URL in location hash.');
+} else {
+  fetch(url).then(function(response) {
+    return response.text();
+  }).then(function(text) {
+    var data = JSON.parse(text);
+
+    var extent = data.bounds;
+    var mapMinZoom = data.minzoom;
+    var mapMaxZoom = data.maxzoom;
+
+    var mapMaxResolution = 180 / 256 / Math.pow(2, mapMaxZoom);
+    var mapResolutions = [];
+    for (var z = 0; z <= mapMaxZoom; z++) {
+      mapResolutions.push(Math.pow(2, mapMaxZoom - z) * mapMaxResolution);
+    }
+
+    var mapTileGrid = new ol.tilegrid.TileGrid({
+      origin: [-180, 90],
+      extent: extent,
+      minZoom: mapMinZoom,
+      resolutions: mapResolutions
+    });
+
+    url = url.split('/');
+    url.pop();
+    url.push('{z}/{x}/{y}');
+
+    var layer = new ol.layer.Tile({
+      source: new ol.source.XYZ({
+        projection: 'EPSG:4326',
+        tileGrid: mapTileGrid,
+        url: url.join('/')
+      })
+    });
+
+    var map = new ol.Map({
+      target: 'map',
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.OSM(),
+          opacity: 0.4
+        }),
+        layer
+      ],
+      view: new ol.View({
+        projection: 'EPSG:4326',
+        extent: extent,
+        maxResolution: mapTileGrid.getResolution(mapMinZoom)
+      })
+    });
+    map.getView().fit(extent, map.getSize());
+    map.addControl(new ol.control.MousePosition());
+  });
+}
+</script>
+</body></html>
